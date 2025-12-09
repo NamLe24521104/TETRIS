@@ -2,7 +2,9 @@
 
 void enableRawMode() {}
 
+const char BLOCK = char(219);
 using namespace std;
+
 
 void boardDelBlock(){}
 
