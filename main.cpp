@@ -11,12 +11,14 @@
 #define W 15
 #define VIEWPORT_HEIGHT 20 
 
+using namespace std;
+
 const char BLOCK = char(219);
 int speed = 200;
 char board[H][W] = {};
 int score = 0;
 
-using namespace std;
+
 
 void enableRawMode() {
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
