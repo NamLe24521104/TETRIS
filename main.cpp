@@ -11,12 +11,14 @@
 #define W 15
 #define VIEWPORT_HEIGHT 20 
 
+using namespace std;
+
 const char BLOCK = char(219);
 int speed = 200;
 char board[H][W] = {};
 int score = 0;
 
-using namespace std;
+
 
 void enableRawMode() {
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
@@ -28,7 +30,7 @@ void enableRawMode() {
 }
 
 char blocks[2][4][4][4] = {
-    // 1: I
+    
     {
         {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
         {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}},
@@ -36,7 +38,7 @@ char blocks[2][4][4][4] = {
         {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}}
     },
 
-    // 2: O
+    
     {
         {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
         {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
@@ -127,12 +129,63 @@ bool canMove(int dx, int dy){
     return true;
 }
 
+bool canRotate(int newRotation) {
+for (int i = 0 ; i < 4 ; i++){
+        for (int j = 0 ; j < 4 ; j++){
+            if (blocks[b][newRotation][i][j] != ' '){
+                int tx = x + j;
+                int ty = y + i;
+                if (tx < 1 || tx >= W-1 || ty >= H-1) return false;
+                if (ty >= 0 && (board[ty][tx] == '#' || board[ty][tx] == BLOCK))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+void rotateBlock() {
+    int newRotation = (rotation + 1) % 4;
+    if (canRotate(newRotation)) {
+        rotation = newRotation;
+    }
+}
+
+
+
+void removeLine(){
+    for (int i = H - 2; i >= 1; i--){
+        bool full = true;
+        for (int j = 1; j < W - 1; j++){
+            if (board[i][j] != BLOCK) {
+                full = false;
+                break;
+            }
+        }
+        if (full) {
+            for (int k = i; k > 0; k--){
+                for (int j = 1; j < W - 1; j++){
+                    board[k][j] = board[k - 1][j];
+                }
+            }
+            for (int j = 1; j < W - 1; j++){
+                board[0][j] = ' ';
+            }
+            score += 100;
+            i++;  
+        }
+    }
+}
+
+
+
 int getBlockMaxCol(int blockIndex) {
     int maxCol = -1;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             if (blocks[blockIndex][0][i][j] != ' ') {
-                maxCol = std::max(maxCol, j);
+                maxCol = max(maxCol, j);
             }
         }
     }
@@ -159,15 +212,19 @@ int main(){
     enableRawMode();
     system("chcp 437 >nul");
     SetConsoleOutputCP(437);
+    
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hOut, &cursorInfo);
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(hOut, &cursorInfo);
+    
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     system("cls");
     srand((unsigned)time(0));
+
+    
     initBoard();
     b = rand() % 2;
     nextBlock = rand() % 2;
@@ -176,6 +233,8 @@ int main(){
     y = 0;
     int fallcounter = 0;
     bool gameOver = false;
+
+    
     while (!gameOver){
         boardDelBlock();
         if (_kbhit()){
@@ -206,6 +265,39 @@ int main(){
             x = getRandomX(b);
             y = 0;
         }
+
+        removeLine();
+        if (isGameOver()) {
+                draw();
+                cout << "\n========== GAME OVER ==========" << endl;
+                cout << "Final Score: " << score << endl;
+                cout << "================================" << endl;
+                cout << "Press any key to exit..." << endl;
+                _getch();
+                gameOver = true;
+                break;
+            }
+            b = nextBlock;
+            nextBlock = rand() % 7;
+            rotation = 0;
+            x = getRandomX(b);
+            y = 0;
+            if (!canMove(0, 0)) {
+                draw();
+                cout << "\n========== GAME OVER ==========" << endl;
+                cout << "Final Score: " << score << endl;
+                cout << "================================" << endl;
+                cout << "Press any key to exit..." << endl;
+                _getch();
+                gameOver = true;
+                break;
+            }
+            fallCounter = 0;
+        }
+        fallCounter = 0;
+    }
+
+        
         block2Board();
         draw();
         Sleep(speed);  
