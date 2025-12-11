@@ -129,6 +129,22 @@ bool canMove(int dx, int dy){
     return true;
 }
 
+bool canRotate(int newRotation) {
+for (int i = 0 ; i < 4 ; i++){
+        for (int j = 0 ; j < 4 ; j++){
+            if (blocks[b][newRotation][i][j] != ' '){
+                int tx = x + j;
+                int ty = y + i;
+                if (tx < 1 || tx >= W-1 || ty >= H-1) return false;
+                if (ty >= 0 && (board[ty][tx] == '#' || board[ty][tx] == BLOCK))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 int getBlockMaxCol(int blockIndex) {
     int maxCol = -1;
     for (int i = 0; i < 4; i++) {
