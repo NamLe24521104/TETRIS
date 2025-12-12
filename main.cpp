@@ -234,7 +234,7 @@ int main(){
         }
         block2Board();
         draw();
-        Sleep(speed);  
+        Sleep(30);  
     }
     return 0;
 }
