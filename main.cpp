@@ -175,6 +175,8 @@ bool isGameOver() {
     }
     return false;
 }
+void removeLine() {}
+
 
 int main(){
     enableRawMode();
