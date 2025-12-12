@@ -230,8 +230,8 @@ int main(){
     system("cls");
     srand((unsigned)time(0));
     initBoard();
-    b = rand() % 2;
-    nextBlock = rand() % 2;
+    b = rand() % 7;
+    nextBlock = rand() % 7;
     rotation = 0;
     x = getRandomX(b);
     y = 0;
@@ -262,7 +262,7 @@ int main(){
         else {
             block2Board();
             b = nextBlock;
-            nextBlock = rand() % 2;
+            nextBlock = rand() % 7;
             rotation = 0;
             x = getRandomX(b);
             y = 0;
