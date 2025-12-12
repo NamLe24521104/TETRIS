@@ -27,7 +27,7 @@ void enableRawMode() {
     SetConsoleMode(hIn, mode);
 }
 
-char blocks[2][4][4][4] = {
+char blocks[7][4][4][4] = {
     
     {
         {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
