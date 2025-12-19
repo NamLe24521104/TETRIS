@@ -290,16 +290,8 @@ int main(){
                 y++;
             }
             else {
-            block2Board();
-            b = nextBlock;
-            nextBlock = rand() % 2;
-            rotation = 0;
-            x = getRandomX(b);
-            y = 0;
-
-            }
-            fallCounter = 0;
-                
+                block2Board();
+                removeLine();
                 if (isGameOver()) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
@@ -325,6 +317,9 @@ int main(){
                     gameOver = true;
                     break;
                 }
+                fallCounter = 0;
+            }
+            fallCounter = 0;
         }
         block2Board();
         draw();
