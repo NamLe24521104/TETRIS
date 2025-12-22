@@ -288,7 +288,7 @@ int main(){
     int fallCounter = 0;
     bool gameOver = false;
     while (!gameOver){
-        boardDelBlock();
+        currentPiece->updateOnBoard(true);
         if (_kbhit()){
             unsigned char ch = _getch();
             char c = tolower(ch);
@@ -315,7 +315,7 @@ int main(){
                 y++;
             }
             else {
-                block2Board();
+                currentPiece->updateOnBoard();
                 removeLine();
                 if (isGameOver()) {
                     draw();
@@ -346,7 +346,7 @@ int main(){
             }
             fallCounter = 0;
         }
-        block2Board();
+        currentPiece->updateOnBoard();
         draw();
         Sleep(30);  
     }
