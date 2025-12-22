@@ -280,7 +280,9 @@ bool canRotate() {
 }
 
 void rotate() {
+    if (canRotate()) {
         rotation = (rotation + 1) % 4;
+    }
 }
 
 int main(){
