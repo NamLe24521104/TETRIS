@@ -258,6 +258,10 @@ bool isGameOver() {
     return false;
 }
 
+void rotate() {
+        rotation = (rotation + 1) % 4;
+}
+
 int main(){
     system("chcp 437 >nul");
     
