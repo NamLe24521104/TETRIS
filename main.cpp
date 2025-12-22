@@ -4,8 +4,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
-#include <cctype>
-#include <algorithm> 
 
 #define H 20
 #define W 15
@@ -14,73 +12,191 @@
 using namespace std;
 
 const char BLOCK = char(219);
-int speed = 200;
+int speed = 200, nextBlock = -1, b;
 char board[H][W] = {};
 int score = 0;
 
-void enableRawMode() {
-    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD mode = 0;
-    GetConsoleMode(hIn, &mode);
-    mode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
-    mode &= ~ENABLE_QUICK_EDIT_MODE;
-    SetConsoleMode(hIn, mode);
-}
+class Block {
+protected:
+    int rotation;
+    int x, y;
+public:
+    Block() : rotation(0), x(4), y(0) {}
+    virtual ~Block() {}
 
-char blocks[7][4][4][4] = {
-    
-    {
-        {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}},
-        {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}}
-    },
+    void setPos(int nx, int ny) { x = nx; y = ny; }
+    int getX() { return x; }
+    int getY() { return y; }
 
-    {
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}}
-    },
-    {
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,' ',' '}}
-    },
-    {
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {BLOCK,BLOCK,' ',' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {BLOCK,BLOCK,' ',' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}}
-    },
-    {
-        {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}}
+    virtual char getBlock(int r, int c) = 0;
 
-    },
-     {
-        {{' ',' ',' ',' '}, {BLOCK,' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
-        {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,' ',' '}}
-    },
-    {
-        {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}},
-        {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {BLOCK,' ',' ',' '}},
-        {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}}
-
+    void updateOnBoard(bool erase = false) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (getBlock(i, j) != ' ') {
+                    int ty = y + i;
+                    int tx = x + j;
+                    if (ty >= 0 && ty < H && tx >= 1 && tx < W - 1) {
+                        board[ty][tx] = erase ? ' ' : BLOCK;
+                    }
+                }
+            }
+        }
     }
 
+    int getMaxCol() {
+        int maxCol = -1;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (this->getBlock(i, j) != ' ') {
+                    if (j > maxCol) maxCol = j;
+                }
+            }
+        }
+        return maxCol + 1;
+    }
 
+    bool canMove(int dx, int dy) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (getBlock(i, j) != ' ') {
+                    int tx = x + j + dx;
+                    int ty = y + i + dy;
+                    if (tx < 1 || tx >= W - 1 || ty >= H - 1) return false;
+                    if (ty >= 0 && board[ty][tx] == BLOCK) return false;
+                }
+            }
+        }
+        return true;
+    }
 };
 
-int x = 4, y = 0, b = 1;
-int rotation = 0;
-int nextBlock = -1;
+Block* currentPiece = nullptr;
+
+// --- KHỐI I ---
+class BlockI : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockI() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockI::data[4][4][4] = {
+    {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}},
+    {{' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,BLOCK}, {' ',' ',' ',' '}, {' ',' ',' ',' '}}
+};
+
+// --- KHỐI O ---
+class BlockO : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockO() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockO::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}}
+};
+
+// --- KHỐI T ---
+class BlockT : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockT() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockT::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,' ',' '}}
+};
+
+// --- KHỐI S ---
+class BlockS : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockS() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockS::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {BLOCK,BLOCK,' ',' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {BLOCK,BLOCK,' ',' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}}
+};
+
+// --- KHỐI Z ---
+class BlockZ : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockZ() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockZ::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}}
+};
+
+// --- KHỐI J ---
+class BlockJ : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockJ() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockJ::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {BLOCK,' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,BLOCK,' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}},
+    {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',BLOCK,' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,' ',' '}}
+};
+
+// --- KHỐI L ---
+class BlockL : public Block {
+private:
+    static char data[4][4][4]; 
+public:
+    BlockL() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+
+char BlockL::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}},
+    {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {BLOCK,' ',' ',' '}},
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}}
+};
+
+Block* spawnBlock(int type) {
+    switch (type) {
+        case 0: return new BlockI();
+        case 1: return new BlockO();
+        case 2: return new BlockT();
+        case 3: return new BlockS();
+        case 4: return new BlockZ();
+        case 5: return new BlockJ();
+        case 6: return new BlockL();
+        default: return new BlockI();
+    }
+}
 
 void gotoxy(int x, int y) {
     COORD c = {(SHORT)x, (SHORT)y};
@@ -103,45 +219,18 @@ void initBoard(){
     }
 }
 
-
-
-void boardDelBlock(){
-    for (int i = 0 ; i < 4 ; i++){
-        for (int j = 0 ; j < 4 ; j++){
-            if (blocks[b][rotation][i][j] != ' '){
-                int ty = y + i;
-                int tx = x + j;
-                if (ty >= 0 && ty < H && tx >= 1 && tx < W-1){
-                    board[ty][tx] = ' ';
-                }
-            }
-        }
-    }
-}
-
-void block2Board(){
-    for (int i = 0 ; i < 4 ; i++){
-        for (int j = 0 ; j < 4 ; j++){
-            if (blocks[b][rotation][i][j] != ' '){
-                int ty = y + i;
-                int tx = x + j;
-                if (ty >= 0 && ty < H && tx >= 1 && tx < W-1){
-                    board[ty][tx] = BLOCK;
-                }
-            }
-        }
-    }
-}
-
 void draw(){
-    system("cls");
-    for (int i = 0; i < VIEWPORT_HEIGHT && i < H; i++){
-        for (int j = 0; j < W; j++){
-            cout << board[i][j] << board[i][j];
+    gotoxy(0, 0); 
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
+            if (board[i][j] == BLOCK) {
+                cout << board[i][j] << board[i][j];
+            } else {
+                cout << board[i][j] << board[i][j];
+            }
         }
         cout << "\n";
-    } 
-    cout << "\n";
+    }
     cout << "Score: " << score << "        Next: ";
     char nextBlockName[] = {'I', 'O', 'T', 'S', 'Z', 'J', 'L'};
     if (nextBlock >= 0 && nextBlock < 7) {
@@ -152,59 +241,12 @@ void draw(){
     cout.flush();
 }
 
-bool canMove(int dx, int dy){
-    for (int i = 0 ; i < 4 ; i++){
-        for (int j = 0 ; j < 4 ; j++){
-            if (blocks[b][rotation][i][j] != ' '){
-                int tx = x + j + dx;
-                int ty = y + i + dy;
-                if (tx < 1 || tx >= W-1 || ty >= H-1) return false;
-                if (ty >= 0 && (board[ty][tx] == char(35) || board[ty][tx] == BLOCK)) return false;
-            }
-        }
-    }
-    return true;
-}
-
-bool canRotate(int newRotation) {
-for (int i = 0 ; i < 4 ; i++){
-        for (int j = 0 ; j < 4 ; j++){
-            if (blocks[b][newRotation][i][j] != ' '){
-                int tx = x + j;
-                int ty = y + i;
-                if (tx < 1 || tx >= W-1 || ty >= H-1) return false;
-                if (ty >= 0 && (board[ty][tx] == '#' || board[ty][tx] == BLOCK))
-                    return false;
-            }
-        }
-    }
-    return true;
-}
-
-void rotateBlock() {
-    int newRotation = (rotation + 1) % 4;
-    if (canRotate(newRotation)) {
-        rotation = newRotation;
-    }
-}
-
-int getBlockMaxCol(int blockIndex) {
-    int maxCol = -1;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (blocks[blockIndex][0][i][j] != ' ') {
-                maxCol = max(maxCol, j);
-            }
-        }
-    }
-    return maxCol + 1;
-}
-
-int getRandomX(int blockIndex) {
-    int blockMaxCol = getBlockMaxCol(blockIndex);
+int getRandomX(Block*p) {
+    if (!p) return 0;
+    int blockMaxCol = p->getMaxCol();
     int maxX = W - 1 - blockMaxCol;
     if (maxX < 1) maxX = 1;
-    return 1 + rand() % maxX;
+    return 1 + (rand() % maxX);
 }
 
 bool isGameOver() {
@@ -215,69 +257,44 @@ bool isGameOver() {
     }
     return false;
 }
-void removeLine() {
-    for (int i = H - 2; i >= 1; i--) {
-        bool full = true;
-        for (int j = 1; j < W - 1; j++) {
-            if (board[i][j] != BLOCK) {
-                full = false;
-                break;
-            }
-        }
-        if (full) {
-            for (int k = i; k > 0; k--) {
-                for (int j = 1; j < W - 1; j++) {
-                    board[k][j] = board[k - 1][j];
-                }
-            }
-            for (int j = 1; j < W - 1; j++) {
-                board[0][j] = ' ';
-            }
-            score += 100;
-            i++;
-        }
-    }
-
-}
-
 
 int main(){
-    enableRawMode();
     system("chcp 437 >nul");
-    SetConsoleOutputCP(437);
+    
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hOut, &cursorInfo);
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(hOut, &cursorInfo);
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    system("cls");
+
     srand((unsigned)time(0));
     initBoard();
-    b = rand() % 7;
     nextBlock = rand() % 7;
-    rotation = 0;
-    x = getRandomX(b);
-    y = 0;
+    b = nextBlock;
+    currentPiece = spawnBlock(b);
+    currentPiece->setPos(getRandomX(currentPiece), 0);
+    nextBlock = rand() % 7;
     int fallCounter = 0;
     bool gameOver = false;
     while (!gameOver){
-        boardDelBlock();
+        currentPiece->updateOnBoard(true);
         if (_kbhit()){
             unsigned char ch = _getch();
             char c = tolower(ch);
             if (c == 'a') {
-                if (canMove(-1, 0)) x--;
+                if (currentPiece->canMove(-1, 0)) {
+                    currentPiece->setPos(currentPiece->getX() - 1, currentPiece->getY());
+                }
             }
             else if (c == 'd') {
-                if (canMove(1, 0)) x++;
+                if (currentPiece->canMove(1, 0)) {
+                    currentPiece->setPos(currentPiece->getX() + 1, currentPiece->getY());
+                }
             }
             else if (c == 's') {
-                if (canMove(0, 1)) y++;
-            }
-            else if (c == 'w') {
-                rotateBlock();
+                if (currentPiece->canMove(0, 1)) {
+                    currentPiece->setPos(currentPiece->getX(), currentPiece->getY() + 1);
+                }
             }
             else if (c == 'q') {
                 gameOver = true;
@@ -286,12 +303,11 @@ int main(){
         }
         fallCounter++;
         if (fallCounter >= speed / 30) {
-            if (canMove(0, 1)) {
-                y++;
+            if (currentPiece->canMove(0, 1)) {
+                currentPiece->setPos(currentPiece->getX(), currentPiece->getY() + 1);
             }
             else {
-                block2Board();
-                removeLine();
+                currentPiece->updateOnBoard();
                 if (isGameOver()) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
@@ -304,10 +320,9 @@ int main(){
                 }
                 b = nextBlock;
                 nextBlock = rand() % 7;
-                rotation = 0;
-                x = getRandomX(b);
-                y = 0;
-                if (!canMove(0, 0)) {
+                currentPiece = spawnBlock(b);
+                currentPiece->setPos(getRandomX(currentPiece), 0);
+                if (!currentPiece->canMove(0, 0)) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
                     cout << "Final Score: " << score << endl;
@@ -321,7 +336,7 @@ int main(){
             }
             fallCounter = 0;
         }
-        block2Board();
+        currentPiece->updateOnBoard();
         draw();
         Sleep(30);  
     }
