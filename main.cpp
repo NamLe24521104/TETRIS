@@ -12,10 +12,9 @@
 using namespace std;
 
 const char BLOCK = char(219);
-int speed = 200, nextBlock = -1;
+int speed = 200, nextBlock = -1, b;
 char board[H][W] = {};
 int score = 0;
-int x, y, rotation, b;
 
 void enableRawMode() {
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
@@ -235,11 +234,12 @@ void draw(){
     cout.flush();
 }
 
-int getRandomX(int blockIndex) {
-    int blockMaxCol = currentPiece->getMaxCol();
+int getRandomX(Block*p) {
+    if (!p) return 0;
+    int blockMaxCol = p->getMaxCol();
     int maxX = W - 1 - blockMaxCol;
     if (maxX < 1) maxX = 1;
-    return 1 + rand() % maxX;
+    return 1 + (rand() % maxX);
 }
 
 bool isGameOver() {
@@ -267,10 +267,8 @@ int main(){
     initBoard();
     nextBlock = rand() % 7;
     b = nextBlock;
-    rotation = 0;
-    x = getRandomX(b);
-    y = 0;
-
+    currentPiece->setPos(getRandomX(currentPiece), 0);
+    nextBlock = rand() % 7;
     int fallCounter = 0;
     bool gameOver = false;
     while (!gameOver){
@@ -317,9 +315,7 @@ int main(){
                 }
                 b = nextBlock;
                 nextBlock = rand() % 7;
-                rotation = 0;
-                x = getRandomX(b);
-                y = 0;
+                currentPiece->setPos(getRandomX(currentPiece), 0);
                 if (!currentPiece->canMove(0, 0)) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
