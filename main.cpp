@@ -66,6 +66,8 @@ public:
     }
 };
 
+Block* currentPiece = nullptr;
+
 // --- KHỐI I ---
 class BlockI : public Block {
 private:
@@ -223,7 +225,7 @@ void draw(){
 }
 
 int getRandomX(int blockIndex) {
-    int blockMaxCol = getBlockMaxCol(blockIndex);
+    int blockMaxCol = currentPiece->getMaxCol();
     int maxX = W - 1 - blockMaxCol;
     if (maxX < 1) maxX = 1;
     return 1 + rand() % maxX;
@@ -237,6 +239,7 @@ bool isGameOver() {
     }
     return false;
 }
+
 void removeLine() {
     for (int i = H - 2; i >= 1; i--) {
         bool full = true;
