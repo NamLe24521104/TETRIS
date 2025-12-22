@@ -28,9 +28,15 @@ void enableRawMode() {
 class Block {
 protected:
     int rotation;
+    int x, y;
 public:
-    Block() : rotation(0) {}
+    Block() : rotation(0), x(4), y(0) {}
     virtual ~Block() {}
+
+    void setPos(int nx, int ny) { x = nx; y = ny; }
+    int getX() { return x; }
+    int getY() { return y; }
+
     virtual char getBlock(int r, int c) = 0;
 
     void updateOnBoard(bool erase = false) {
