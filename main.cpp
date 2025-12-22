@@ -32,6 +32,18 @@ public:
     Block() : rotation(0) {}
     virtual ~Block() {}
     virtual char getBlock(int r, int c) = 0;
+    
+    int getMaxCol() {
+        int maxCol = -1;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (this->getBlock(i, j) != ' ') {
+                    if (j > maxCol) maxCol = j;
+                }
+            }
+        }
+        return maxCol + 1;
+    }
 };
 
 // --- KHỐI I ---
