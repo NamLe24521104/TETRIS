@@ -16,15 +16,6 @@ int speed = 200, nextBlock = -1, b;
 char board[H][W] = {};
 int score = 0;
 
-void enableRawMode() {
-    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD mode = 0;
-    GetConsoleMode(hIn, &mode);
-    mode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
-    mode &= ~ENABLE_QUICK_EDIT_MODE;
-    SetConsoleMode(hIn, mode);
-}
-
 class Block {
 protected:
     int rotation;
@@ -268,17 +259,14 @@ bool isGameOver() {
 }
 
 int main(){
-    enableRawMode();
     system("chcp 437 >nul");
-    SetConsoleOutputCP(437);
+    
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hOut, &cursorInfo);
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(hOut, &cursorInfo);
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    system("cls");
+
     srand((unsigned)time(0));
     initBoard();
     nextBlock = rand() % 7;
