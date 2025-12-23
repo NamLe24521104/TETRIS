@@ -17,6 +17,7 @@ using namespace std;
 const char BLOCK = char(219);
 int speed = 200, score = 0, nextBlock = -1, b;
 char board[H][W] = {};
+int boardcolor[H][W] = {};
 
 void enableRawMode() {
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
