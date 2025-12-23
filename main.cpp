@@ -27,6 +27,15 @@ void enableRawMode() {
     SetConsoleMode(hIn, mode);
 }
 
+class Block {
+protected:
+    int rotation;
+
+public:
+    Block() : rotation(0) {}
+    virtual ~Block() {}
+};
+
 char blocks[7][4][4][4] = {
     
     {
