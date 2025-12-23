@@ -10,6 +10,7 @@
 #define H 20
 #define W 15
 #define VIEWPORT_HEIGHT 20 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 using namespace std;
 
