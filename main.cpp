@@ -236,6 +236,8 @@ void draw(){
     cout << "Controls: A/D=Move  S=Down  W=Rotate  Q=Quit\n";
     cout.flush();
 }
+void removeLine()
+
 
 int getRandomX(Block* p) {
     if (!p) return 4;
