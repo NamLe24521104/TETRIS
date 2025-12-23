@@ -11,7 +11,7 @@
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 const char BLOCK = char(219);
-int times = 4, score = 0, nextBlock = -1, b;
+int speed = 15, score = 0, nextBlock = -1, b;
 char board[H][W] = {};
 int boardcolor[H][W] = {};
 
@@ -305,7 +305,9 @@ void removeLine(){
                 board[0][j] = ' ';
             }
             score += 100;
-            if(score % 200 == 0) times++;
+            if (score % 500 == 0 && speed > 2) { 
+                speed--;
+            }
             i++;  
         }
     }
@@ -389,7 +391,7 @@ int main() {
             }
         }
         fallCounter++;
-        if (fallCounter >= 50/times) {
+        if (fallCounter >= speed) {
             if (currentPiece->canMove(0, 1)) {
                 currentPiece->setPos(currentPiece->getX(), currentPiece->getY() + 1);
             }
