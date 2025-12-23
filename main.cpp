@@ -331,6 +331,7 @@ int main(){
             }
             else {
                 currentPiece->updateOnBoard(false);
+                removeLine();
                 if (isGameOver()) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
