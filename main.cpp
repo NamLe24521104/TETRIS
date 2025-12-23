@@ -221,7 +221,40 @@ void initBoard(){
         }
     }
 }
+ 
+void draw() {
+    gotoxy(0, 0); 
+    int currentColor = -1; 
 
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
+            int pixelColor = 7; 
+            if (board[i][j] == BLOCK) {
+                pixelColor = (boardcolor[i][j] != -1) ? boardcolor[i][j] : currentPiece->getColor();
+            } 
+            else if (board[i][j] != ' ') {
+                if (currentPiece != nullptr) pixelColor = currentPiece->getColor();
+            }
+            if (pixelColor != currentColor) {
+                SetConsoleTextAttribute(hConsole, pixelColor);
+                currentColor = pixelColor;
+            }
+
+            if (board[i][j] == ' ') cout << "  ";
+            else cout << board[i][j] << board[i][j];
+        }
+        cout << "\n";
+    }
+
+    cout << "Score: " << score << "        Next: ";
+    char nextBlockName[] = {'I', 'O', 'T', 'S', 'Z', 'J', 'L'};
+    if (nextBlock >= 0 && nextBlock < 7) {
+        cout << nextBlockName[nextBlock];
+    }
+    cout << "\n";
+    cout << "Controls: A/D=Move  S=Down  W=Rotate  Q=Quit  Space=Hard drop\n";
+    cout.flush();
+}
 
 
 int getRandomX(Block* p) {
