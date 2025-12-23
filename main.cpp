@@ -253,7 +253,10 @@ void removeLine(){
                     board[k][j] = board[k - 1][j];
                 }
             }
+            for (int j = 1; j < W - 1; j++)
+                board[0][j] = ' ';
     }
+    
 }
 
 int getRandomX(Block* p) {
