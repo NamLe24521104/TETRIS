@@ -68,6 +68,18 @@ public:
         }
         return true;
     }
+
+    int getMaxCol() {
+        int maxCol = -1;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (this->getBlock(i, j) != ' ') {
+                    if (j > maxCol) maxCol = j;
+                }
+            }
+        }
+        return maxCol + 1;
+    }
 };
 
 // --- CÁC LỚP CON VỚI KHỞI TẠO STATIC BÊN NGOÀI ---
