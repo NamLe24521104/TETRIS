@@ -31,10 +31,11 @@ void enableRawMode() {
 class Block {
 protected:
     int rotation;
-    int x,y;
     int color;
+    int x, y; 
+
 public:
-    Block() : rotation(0), x(4), y(0) {}
+    Block(int c) : rotation(0), color(c), x(4), y(0) {}
     virtual ~Block() {}
 
     void setPos(int nx, int ny) { x = nx; y = ny; }
@@ -120,7 +121,7 @@ public:
 class BlockI : public Block {
     static char data[4][4][4];
 public:
-    BlockI() : Block() {} 
+    BlockI() : Block(12) {} 
     char getBlock(int r, int c) override { return data[rotation][r][c]; }
 };
 char BlockI::data[4][4][4] = {
