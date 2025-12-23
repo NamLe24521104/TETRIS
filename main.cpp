@@ -123,6 +123,20 @@ char BlockJ::data[4][4][4] = {
     {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {BLOCK,BLOCK,' ',' '}}
 };
 
+// Block L
+class BlockL : public Block {
+    static char data[4][4][4];
+public:
+    BlockL() : Block() {}
+    char getBlock(int r, int c) override { return data[rotation][r][c]; }
+};
+char BlockL::data[4][4][4] = {
+    {{' ',' ',' ',' '}, {' ',' ',BLOCK,' '}, {BLOCK,BLOCK,BLOCK,' '}, {' ',' ',' ',' '}},
+    {{' ',' ',' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,BLOCK,' '}},
+    {{' ',' ',' ',' '}, {' ',' ',' ',' '}, {BLOCK,BLOCK,BLOCK,' '}, {BLOCK,' ',' ',' '}},
+    {{' ',' ',' ',' '}, {BLOCK,BLOCK,' ',' '}, {' ',BLOCK,' ',' '}, {' ',BLOCK,' ',' '}}
+};
+
 char blocks[7][4][4][4] = {
     
     {
