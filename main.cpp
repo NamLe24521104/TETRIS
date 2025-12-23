@@ -222,24 +222,7 @@ void initBoard(){
     }
 }
 
-void draw(){
-    system("cls");
-    for (int i = 0; i < VIEWPORT_HEIGHT && i < H; i++){
-        for (int j = 0; j < W; j++){
-            cout << board[i][j] << board[i][j];
-        }
-        cout << "\n";
-    } 
-    cout << "\n";
-    cout << "Score: " << score << "        Next: ";
-    char nextBlockName[] = {'I', 'O', 'T', 'S', 'Z', 'J', 'L'};
-    if (nextBlock >= 0 && nextBlock < 7) {
-        cout << nextBlockName[nextBlock];
-    }
-    cout << "\n";
-    cout << "Controls: A/D=Move  S=Down  W=Rotate  Q=Quit\n";
-    cout.flush();
-}
+
 
 int getRandomX(Block* p) {
     if (!p) return 4;
