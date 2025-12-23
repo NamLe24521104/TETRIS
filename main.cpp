@@ -30,10 +30,16 @@ void enableRawMode() {
 class Block {
 protected:
     int rotation;
-
+    int x,y;
 public:
-    Block() : rotation(0) {}
+    Block() : rotation(0), x(4), y(0) {}
     virtual ~Block() {}
+
+    void setPos(int nx, int ny) { x = nx; y = ny; }
+    void setRotation(int r) { rotation = r % 4; }
+    int getX() { return x; }
+    int getY() { return y; }
+    int getRotation() { return rotation;}
     virtual char getBlock(int r, int c) = 0;
 };
 
@@ -331,6 +337,7 @@ int main(){
     initBoard();
     b = rand() % 7;
     nextBlock = rand() % 7;
+    currentPiece = spawnBlock(b);
     rotation = 0;
     x = getRandomX(b);
     y = 0;
