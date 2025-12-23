@@ -237,11 +237,12 @@ void draw(){
     cout.flush();
 }
 
-int getRandomX(int blockIndex) {
-    int blockMaxCol = getBlockMaxCol(blockIndex);
+int getRandomX(Block* p) {
+    if (!p) return 4;
+    int blockMaxCol = p->getMaxCol();
     int maxX = W - 1 - blockMaxCol;
     if (maxX < 1) maxX = 1;
-    return 1 + rand() % maxX;
+    return 1 + (rand() % maxX);
 }
 
 bool isGameOver() {
