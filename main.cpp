@@ -245,7 +245,6 @@ void draw() {
         }
         cout << "\n";
     }
-
     cout << "Score: " << score << "        Next: ";
     char nextBlockName[] = {'I', 'O', 'T', 'S', 'Z', 'J', 'L'};
     if (nextBlock >= 0 && nextBlock < 7) {
@@ -256,6 +255,13 @@ void draw() {
     cout.flush();
 }
 
+void setUpBoardColor() {
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
+            boardcolor[i][j] = -1;
+        }
+    }
+}
 
 int getRandomX(Block* p) {
     if (!p) return 4;
