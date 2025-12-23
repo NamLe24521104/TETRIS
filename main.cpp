@@ -270,26 +270,30 @@ int main(){
     srand((unsigned)time(0));
     initBoard();
     b = rand() % 7;
-    nextBlock = rand() % 7;
     currentPiece = spawnBlock(b);
-    rotation = 0;
-    x = getRandomX(b);
-    y = 0;
+    currentPiece->setPos(getRandomX(currentPiece), 0);
+    nextBlock = rand() % 7;
     int fallCounter = 0;
     bool gameOver = false;
     while (!gameOver){
-        boardDelBlock();
+        currentPiece->updateOnBoard(true);;
         if (_kbhit()){
             unsigned char ch = _getch();
             char c = tolower(ch);
             if (c == 'a') {
-                if (canMove(-1, 0)) x--;
+                if (currentPiece->canMove(-1, 0)) {
+                    currentPiece->setPos(currentPiece->getX() - 1, currentPiece->getY());
+                }
             }
             else if (c == 'd') {
-                if (canMove(1, 0)) x++;
+                if (currentPiece->canMove(1, 0)) {
+                    currentPiece->setPos(currentPiece->getX() + 1, currentPiece->getY());
+                }
             }
             else if (c == 's') {
-                if (canMove(0, 1)) y++;
+                if (currentPiece->canMove(0, 1)) {
+                    currentPiece->setPos(currentPiece->getX(), currentPiece->getY() + 1);
+                }
             }
             else if (c == 'q') {
                 gameOver = true;
@@ -297,12 +301,12 @@ int main(){
             }
         }
         fallCounter++;
-        if (fallCounter >= speed / 30) {
-            if (canMove(0, 1)) {
-                y++;
+        if (fallCounter >= speed / 15) {
+            if (currentPiece->canMove(0, 1)) {
+                currentPiece->setPos(currentPiece->getX(), currentPiece->getY() + 1);
             }
             else {
-                block2Board();
+                currentPiece->updateOnBoard(false);
                 if (isGameOver()) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
@@ -313,12 +317,12 @@ int main(){
                     gameOver = true;
                     break;
                 }
+                delete currentPiece; 
                 b = nextBlock;
+                currentPiece = spawnBlock(b);
+                currentPiece->setPos(getRandomX(currentPiece), 0);
                 nextBlock = rand() % 7;
-                rotation = 0;
-                x = getRandomX(b);
-                y = 0;
-                if (!canMove(0, 0)) {
+                if (!currentPiece->canMove(0, 0)) {
                     draw();
                     cout << "\n========== GAME OVER ==========" << endl;
                     cout << "Final Score: " << score << endl;
@@ -332,7 +336,7 @@ int main(){
             }
             fallCounter = 0;
         }
-        block2Board();
+        currentPiece->updateOnBoard(false);
         draw();
         Sleep(30);  
     }
